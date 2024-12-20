@@ -430,6 +430,27 @@ impl Default for NativeOptions {
 
 // ----------------------------------------------------------------------------
 
+#[cfg(target_arch = "wasm32")]
+#[derive(Clone, Debug)]
+/// Options for handling input events in a web environment
+pub struct WebInputOptions {
+    /// Disable copy paste so it can be handled by browser
+    pub disable_copy_paste: bool,
+
+    /// Disable drag and drop so it can be handled by browser
+    pub disable_drag_and_drop: bool,
+}
+
+#[cfg(target_arch = "wasm32")]
+impl Default for WebInputOptions {
+    fn default() -> Self {
+        Self {
+            disable_copy_paste: true,
+            disable_drag_and_drop: true,
+        }
+    }
+}
+
 /// Options when using `eframe` in a web page.
 #[cfg(target_arch = "wasm32")]
 pub struct WebOptions {
@@ -465,6 +486,9 @@ pub struct WebOptions {
     /// [`stopPropagation`](https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation)
     /// is called on every event.
     pub should_propagate_event: Box<dyn Fn(&egui::Event) -> bool>,
+
+    /// Controls how input events are handled in a web environment
+    pub input_options: WebInputOptions,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -482,6 +506,7 @@ impl Default for WebOptions {
             dithering: true,
 
             should_propagate_event: Box::new(|_| false),
+            input_options: WebInputOptions::default(),
         }
     }
 }
@@ -799,6 +824,7 @@ pub trait Storage {
 }
 
 /// Stores nothing.
+#[allow(dead_code)]
 #[derive(Clone, Default)]
 pub(crate) struct DummyStorage {}
 

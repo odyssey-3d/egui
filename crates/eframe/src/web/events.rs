@@ -4,6 +4,7 @@ use super::{
     push_touches, text_from_keyboard_event, theme_from_dark_mode, translate_key, AppRunner,
     Closure, JsCast, JsValue, WebRunner,
 };
+use crate::WebInputOptions;
 use web_sys::EventTarget;
 
 // TODO(emilk): there are more calls to `prevent_default` and `stop_propagaton`
@@ -56,7 +57,12 @@ fn paint_if_needed(runner: &mut AppRunner) {
 
 // ------------------------------------------------------------------------
 
-pub(crate) fn install_event_handlers(runner_ref: &WebRunner) -> Result<(), JsValue> {
+pub(crate) fn install_event_handlers(
+    runner_ref: &WebRunner,
+    input_options: &WebInputOptions,
+) -> Result<(), JsValue> {
+    log::info!("install_event_handlers");
+
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
     let canvas = runner_ref.try_lock().unwrap().canvas().clone();
@@ -81,7 +87,9 @@ pub(crate) fn install_event_handlers(runner_ref: &WebRunner) -> Result<(), JsVal
 
     // It seems copy/cut/paste events only work on the document,
     // so we check if we have focus inside of the handler.
-    install_copy_cut_paste(runner_ref, &document)?;
+    if !input_options.disable_copy_paste {
+        install_copy_cut_paste(runner_ref, &document)?;
+    }
 
     // Use `document` here to notice if the user releases a drag outside of the canvas:
     // See https://github.com/emilk/egui/issues/3157
@@ -98,7 +106,9 @@ pub(crate) fn install_event_handlers(runner_ref: &WebRunner) -> Result<(), JsVal
     install_touchcancel(runner_ref, &canvas)?;
 
     install_wheel(runner_ref, &canvas)?;
-    install_drag_and_drop(runner_ref, &canvas)?;
+    if !input_options.disable_drag_and_drop {
+        install_drag_and_drop(runner_ref, &canvas)?;
+    }
     install_window_events(runner_ref, &window)?;
     install_color_scheme_change_event(runner_ref, &window)?;
     Ok(())

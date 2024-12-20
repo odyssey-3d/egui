@@ -22,6 +22,8 @@ impl TextAgent {
             .create_element("input")?
             .dyn_into::<web_sys::HtmlInputElement>()?;
         input.set_type("text");
+
+        #[allow(deprecated)]
         input.set_autofocus(true);
         input.set_attribute("autocapitalize", "off")?;
 

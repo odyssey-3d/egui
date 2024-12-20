@@ -60,6 +60,7 @@ impl WebRunner {
 
         let text_agent = TextAgent::attach(self)?;
 
+        let input_options = &web_options.input_options.clone();
         let runner = AppRunner::new(canvas, web_options, app_creator, text_agent).await?;
 
         {
@@ -74,7 +75,7 @@ impl WebRunner {
         self.runner.replace(Some(runner));
 
         {
-            events::install_event_handlers(self)?;
+            events::install_event_handlers(self, input_options)?;
 
             // The resize observer handles calling `request_animation_frame` to start the render loop.
             events::install_resize_observer(self)?;
